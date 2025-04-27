@@ -82,6 +82,19 @@ func Set[V any](secret []byte, w http.ResponseWriter, value V, cookie http.Cooki
 	return nil
 }
 
+var zeroTime time.Time
+
+// Del deletes a cookie with the given name from the response, if it was present in the request.
+func Del(w http.ResponseWriter, r *http.Request, cookie http.Cookie) {
+	if len(r.CookiesNamed(cookie.Name)) != 0 {
+		c := cookie
+		c.Value = ""
+		c.Expires = zeroTime
+		c.MaxAge = -1
+		http.SetCookie(w, &c)
+	}
+}
+
 // Get retrieves a cookie with the given name from the request.
 // The cookie value is decrypted and decompressed using the XChaCha20-Poly1305 AEAD algorithm.
 // The cookie value is unmarshaled into the given type V.

@@ -38,6 +38,26 @@ func TestWithoutExpiry(t *testing.T) {
 	ensure.DeepEqual(t, actual.Content, given.Content)
 }
 
+func TestSuccessUsingPointers(t *testing.T) {
+	w := httptest.NewRecorder()
+	err := sookie.Set(secret, w, &given, http.Cookie{Name: cookieName})
+	ensure.Nil(t, err)
+	r := httptest.NewRequest("GET", "/", nil)
+	r.Header.Set("Cookie", w.Header().Get("Set-Cookie"))
+	actual, err := sookie.Get[*Flash](secret, r, cookieName)
+	ensure.Nil(t, err)
+	ensure.DeepEqual(t, actual.Kind, given.Kind)
+	ensure.DeepEqual(t, actual.Content, given.Content)
+}
+
+func TestNoCookieUsingPointers(t *testing.T) {
+	r := httptest.NewRequest("GET", "/", nil)
+	actual, err := sookie.Get[*Flash](secret, r, cookieName)
+	ensure.NotNil(t, err)
+	ensure.DeepEqual(t, err, http.ErrNoCookie)
+	ensure.True(t, actual == nil)
+}
+
 func TestDelete(t *testing.T) {
 	w := httptest.NewRecorder()
 	err := sookie.Set(secret, w, Flash{}, http.Cookie{
@@ -171,4 +191,19 @@ func TestSetGetUnmarshalMismatch(t *testing.T) {
 	_, err = sookie.Get[int](secret, r, cookieName)
 	ensure.NotNil(t, err)
 	ensure.StringContains(t, err.Error(), "sookie: failed to unmarshal cookie")
+}
+
+func TestDelExists(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/", nil)
+	r.Header.Set("Cookie", cookieName+"=value")
+	sookie.Del(w, r, http.Cookie{Name: cookieName})
+	ensure.DeepEqual(t, w.Header().Get("Set-Cookie"), cookieName+"=; Max-Age=0")
+}
+
+func TestDelMissing(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/", nil)
+	sookie.Del(w, r, http.Cookie{Name: cookieName})
+	ensure.DeepEqual(t, len(w.Header().Values("Set-Cookie")), 0)
 }
