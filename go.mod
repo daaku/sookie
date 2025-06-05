@@ -6,7 +6,7 @@ require (
 	github.com/daaku/ensure v1.0.1
 	github.com/klauspost/compress v1.18.0
 	github.com/shamaton/msgpack/v2 v2.2.3
-	golang.org/x/crypto v0.38.0
+	golang.org/x/crypto v0.39.0
 )
 
 require (
