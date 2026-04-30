@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/daaku/ensure v1.0.1
-	github.com/klauspost/compress v1.18.5
+	github.com/klauspost/compress v1.18.6
 	github.com/shamaton/msgpack/v2 v2.4.0
 	golang.org/x/crypto v0.50.0
 )
